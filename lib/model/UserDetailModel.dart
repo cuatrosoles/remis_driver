@@ -46,9 +46,7 @@ class UserData {
   String? loginType;
   String? longitude;
   String? playerId;
-  String? orig_profileImage;
   String? profileImage;
-  String? mi_profileImage;
   var serviceId;
   String? status;
   String? timezone;
@@ -84,7 +82,6 @@ class UserData {
     this.longitude,
     this.playerId,
     this.profileImage,
-    this.mi_profileImage,
     this.serviceId,
     this.listAdicionales,
     this.status,
@@ -103,11 +100,6 @@ class UserData {
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) {
-    final url_latina = 'https:\/\/remissessaenzpeña.com';
-    final orig_profileImage = json['profile_image'];
-    final split = orig_profileImage.split('.com');
-    final mi_profileImage = url_latina + split[1];
-
     return UserData(
       address: json['address'],
       contactNumber: json['contact_number'],
@@ -127,12 +119,7 @@ class UserData {
       loginType: json['login_type'],
       longitude: json['longitude'],
       playerId: json['player_id'],
-
-      profileImage: json['profile_image'].toString(),
-
-      ///profileImage: mi_profileImage,
-      mi_profileImage: mi_profileImage,
-
+      profileImage: json['profile_image'],
       serviceId: json['service_id'],
       listAdicionales: json['list_adicionales'],
       status: json['status'],
@@ -159,11 +146,6 @@ class UserData {
   }
 
   Map<String, dynamic> toJson() {
-    final url_latina = 'https:\/\/remissessaenzpeña.com';
-    final orig_profileImage = this.profileImage;
-    final split = orig_profileImage!.split('.com');
-    final mi_profileImage = url_latina + split[1];
-
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['address'] = this.address;
     data['contact_number'] = this.contactNumber;
@@ -184,11 +166,7 @@ class UserData {
     data['longitude'] = this.longitude;
     data['player_id'] = this.playerId;
 
-    data['profile_image'] = this.profileImage.toString();
-
-    data['mi_profile_image'] = mi_profileImage;
-
-    data['mi_profile_image'] = this.mi_profileImage;
+    data['profile_image'] = this.profileImage;
     data['service_id'] = this.serviceId;
     data['list_adicionales'] = this.listAdicionales;
     data['status'] = this.status;
