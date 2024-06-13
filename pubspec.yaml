@@ -88,7 +88,7 @@ dependencies:
   mqtt_client: ^10.0.0
 
   #DOWNLOAD INVOICE PDF
-  pdf: ^3.10.6
+  pdf: ^3.10.8
   path_provider: ^2.1.1
   open_file: ^3.3.2
   printing: ^5.11.1
