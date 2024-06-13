@@ -119,7 +119,7 @@ dependency_overrides:
   cloud_firestore: ^4.8.1
   http: ^1.0.0
   chewie: ^1.5.0
-  stripe_android: 9.5.0+1
+  ##stripe_android: 9.5.0+1
   ##flutter_paystack: ^1.0.7
 
 
