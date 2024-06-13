@@ -22,8 +22,10 @@ jobs:
         working-directory: ios
 
       - run: rm -rf Podfile Pods
+        working-directory: ios
 
       - run: pod install
+        working-directory: ios
 
 
       - run: flutter build ios --release --no-codesign
