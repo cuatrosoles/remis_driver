@@ -34,7 +34,7 @@
 		</dict>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>Mighty Driver app requires access to the Camera to upload your profile photo.</string>
+	<string>Remis Saenz Peña Driver app requires access to the Camera to upload your profile photo.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
