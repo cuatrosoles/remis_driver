@@ -2,23 +2,23 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_braintree/flutter_braintree.dart';
+//import 'package:flutter_braintree/flutter_braintree.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
-import 'package:flutter_paystack/flutter_paystack.dart';
-import 'package:flutter_paytabs_bridge/BaseBillingShippingInfo.dart' as payTab;
-import 'package:flutter_paytabs_bridge/IOSThemeConfiguration.dart';
-import 'package:flutter_paytabs_bridge/PaymentSdkApms.dart';
-import 'package:flutter_paytabs_bridge/PaymentSdkConfigurationDetails.dart';
-import 'package:flutter_paytabs_bridge/flutter_paytabs_bridge.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:flutterwave_standard/flutterwave.dart';
-import 'package:flutterwave_standard/view/view_utils.dart';
+//import 'package:flutter_paystack/flutter_paystack.dart';
+//import 'package:flutter_paytabs_bridge/BaseBillingShippingInfo.dart' as payTab;
+//import 'package:flutter_paytabs_bridge/IOSThemeConfiguration.dart';
+//import 'package:flutter_paytabs_bridge/PaymentSdkApms.dart';
+//import 'package:flutter_paytabs_bridge/PaymentSdkConfigurationDetails.dart';
+//import 'package:flutter_paytabs_bridge/flutter_paytabs_bridge.dart';
+//import 'package:flutter_stripe/flutter_stripe.dart';
+//import 'package:fluttertoast/fluttertoast.dart';
+//import 'package:flutterwave_standard/flutterwave.dart';
+//import 'package:flutterwave_standard/view/view_utils.dart';
 import 'package:http/http.dart' as http;
 
 // import 'package:mercado_pago_mobile_checkout/mercado_pago_mobile_checkout.dart';
-import 'package:my_fatoorah/my_fatoorah.dart';
-import 'package:paytm/paytm.dart';
+//import 'package:my_fatoorah/my_fatoorah.dart';
+//import 'package:paytm/paytm.dart';
 
 ///import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:taxi_driver/utils/Extensions/StringExtensions.dart';
@@ -68,10 +68,11 @@ class PaymentScreenState extends State<PaymentScreen> {
   String? razorKey;
   bool isTestType = true;
   bool loading = false;
-  final plugin = PaystackPlugin();
+
+  ///final plugin = PaystackPlugin();
 
   ///late Razorpay _razorpay;
-  CheckoutMethod method = CheckoutMethod.card;
+  ///CheckoutMethod method = CheckoutMethod.card;
 
   @override
   void initState() {
@@ -82,14 +83,14 @@ class PaymentScreenState extends State<PaymentScreen> {
   void init() async {
     await paymentListApiCall();
     if (paymentList.any((element) => element.type == PAYMENT_TYPE_STRIPE)) {
-      Stripe.publishableKey = stripPaymentPublishKey.validate();
-      Stripe.merchantIdentifier = mStripeIdentifier;
-      await Stripe.instance.applySettings().catchError((e) {
-        log("${e.toString()}");
-      });
+      ///Stripe.publishableKey = stripPaymentPublishKey.validate();
+      ///Stripe.merchantIdentifier = mStripeIdentifier;
+      ///await Stripe.instance.applySettings().catchError((e) {
+      ///  log("${e.toString()}");
+      ///});
     }
     if (paymentList.any((element) => element.type == PAYMENT_TYPE_PAYSTACK)) {
-      plugin.initialize(publicKey: payStackPublicKey.validate());
+      ///plugin.initialize(publicKey: payStackPublicKey.validate());
     }
     /*
     if (paymentList.any((element) => element.type == PAYMENT_TYPE_RAZORPAY)) {
@@ -216,7 +217,6 @@ class PaymentScreenState extends State<PaymentScreen> {
   void _handleExternalWallet(ExternalWalletResponse response) {
     Fluttertoast.showToast(msg: "EXTERNAL_WALLET: " + response.walletName!, toastLength: Toast.LENGTH_SHORT);
   }
-  */
 
   /// StripPayment
   void stripePay() async {
@@ -446,6 +446,7 @@ class PaymentScreenState extends State<PaymentScreen> {
 
     return configuration;
   }
+  */
 
   // /// Mercado Pago payment
   // void mercadoPagoPayment() async {
@@ -480,6 +481,7 @@ class PaymentScreenState extends State<PaymentScreen> {
   // }
 
   /// My Fatoorah Payment
+  /*
   Future<void> myFatoorahPayment() async {
     PaymentResponse response = await MyFatoorah.startPayment(
       context: context,
@@ -591,6 +593,7 @@ class PaymentScreenState extends State<PaymentScreen> {
       print(e);
     }
   }
+  */
 
   @override
   void setState(fn) {
@@ -663,6 +666,7 @@ class PaymentScreenState extends State<PaymentScreen> {
           child: AppButtonWidget(
             text: language.pay,
             onTap: () {
+              /*
               if (selectedPaymentType == PAYMENT_TYPE_STRIPE) {
                 stripePay();
               } else if (selectedPaymentType == PAYMENT_TYPE_PAYSTACK) {
@@ -680,6 +684,7 @@ class PaymentScreenState extends State<PaymentScreen> {
               } else if (selectedPaymentType == PAYMENT_TYPE_PAYTM) {
                 paytmPayment();
               }
+              */
             },
           ),
         ),

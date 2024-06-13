@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
-import 'package:flutter_paytabs_bridge/BaseBillingShippingInfo.dart';
+
+///import 'package:flutter_paytabs_bridge/BaseBillingShippingInfo.dart';
 import 'package:taxi_driver/main.dart';
 import 'package:taxi_driver/model/AdditionalFeesList.dart';
 import 'package:taxi_driver/model/UserDetailModel.dart';
