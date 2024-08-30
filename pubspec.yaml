@@ -56,7 +56,7 @@ dependencies:
   date_time_picker: ^2.1.0
 
   #CONNECTIVITY
-  package_info_plus: ^8.0.2
+  package_info_plus: ^8.0.0
   http: ^1.1.0
   connectivity_plus: ^6.0.5
   url_launcher: ^6.2.1
