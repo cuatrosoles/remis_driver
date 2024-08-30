@@ -60,6 +60,12 @@
 @import firebase_storage;
 #endif
 
+#if __has_include(<flutter_compass/FlutterCompassPlugin.h>)
+#import <flutter_compass/FlutterCompassPlugin.h>
+#else
+@import flutter_compass;
+#endif
+
 #if __has_include(<flutter_native_contact_picker/FlutterNativeContactPickerPlugin.h>)
 #import <flutter_native_contact_picker/FlutterNativeContactPickerPlugin.h>
 #else
@@ -210,6 +216,7 @@
   [FLTFirebaseCrashlyticsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseCrashlyticsPlugin"]];
   [FLTFirebaseDatabasePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseDatabasePlugin"]];
   [FLTFirebaseStoragePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseStoragePlugin"]];
+  [FlutterCompassPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterCompassPlugin"]];
   [FlutterNativeContactPickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterNativeContactPickerPlugin"]];
   [FlutterRingtonePlayerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterRingtonePlayerPlugin"]];
   [FluttertoastPlugin registerWithRegistrar:[registry registrarForPlugin:@"FluttertoastPlugin"]];

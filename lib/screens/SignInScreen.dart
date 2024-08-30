@@ -380,8 +380,10 @@ class SignInScreenState extends State<SignInScreen> {
                     },
                   ),
                   SizedBox(height: 16),
+                  /*
                   socialWidget(),
                   SizedBox(height: 16),
+                  */
                 ],
               ),
             ),

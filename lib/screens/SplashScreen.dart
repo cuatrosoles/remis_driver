@@ -33,10 +33,11 @@ class SplashScreenState extends State<SplashScreen> {
       await Geolocator.requestPermission().then((value) async {
         await Geolocator.getCurrentPosition().then((value) {
           log("value---${value.latitude}");
-          launchScreen(context, WalkThroughScreen(),
+          launchScreen(context, SignInScreen(),
               pageRouteAnimation: PageRouteAnimation.Slide, isNewTask: true);
           sharedPref.setDouble(LATITUDE, value.latitude);
           sharedPref.setDouble(LONGITUDE, value.longitude);
+          sharedPref.setBool(IS_FIRST_TIME, false);
         });
       });
     } else {

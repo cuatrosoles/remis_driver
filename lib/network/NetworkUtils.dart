@@ -67,7 +67,7 @@ Future<Response> buildHttpResponse(String endPoint,
 
       return response;
     } catch (e) {
-      throw 'Something Went Wrong';
+      throw 'Something Went Wrong2';
     }
   } else {
     throw 'Your internet is not working';
@@ -106,7 +106,7 @@ Future handleResponse(Response response, [bool? avoidTokenError]) async {
     } on Exception catch (e) {
       log(e);
       print(e);
-      throw 'Something Went Wrong';
+      throw 'Something Went Wrong3';
     }
   }
 }

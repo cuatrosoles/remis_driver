@@ -89,7 +89,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late StreamSubscription<ConnectivityResult> connectivitySubscription;
+  late StreamSubscription<List<ConnectivityResult>> connectivitySubscription;
 
   @override
   void initState() {

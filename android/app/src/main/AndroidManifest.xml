@@ -5,9 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove" />
-
 
    <application
         android:label="Remises Saenz Peña Driver"
@@ -17,7 +16,7 @@
 
        <meta-data
            android:name="com.google.android.geo.API_KEY"
-           android:value="AIzaSyD4HpgVsecTY68cxEUgPLjHNwE29B8KUH4" />
+           android:value="AIzaSyALU--rsdhd4lwvHyolP0x1tg4Dqcj-PI8" />
 
         <activity
             android:name=".MainActivity"

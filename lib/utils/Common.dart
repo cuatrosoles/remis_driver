@@ -279,6 +279,7 @@ String statusTypeIcon({String? type}) {
 
 bool get isRTL => rtlLanguage.contains(appStore.selectedLanguage);
 
+///////////////////////////////////////////////////////////////////////////////
 double calculateDistance(lat1, lon1, lat2, lon2) {
   var p = 0.017453292519943295;
   var a = 0.5 -
@@ -286,6 +287,7 @@ double calculateDistance(lat1, lon1, lat2, lon2) {
       cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
   return (12742 * asin(sqrt(a))).toStringAsFixed(digitAfterDecimal).toDouble();
 }
+/////////////////////////////////////////////////////////////////////////////////
 
 Widget totalCount({String? title, num? amount, bool? isTotal = false}) {
   return Row(

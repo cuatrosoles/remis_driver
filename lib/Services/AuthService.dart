@@ -132,7 +132,7 @@ class AuthServices {
           });
         } else {
           appStore.setLoading(false);
-          throw 'Something went wrong';
+          throw 'Something went wrong1';
         }
       });
     } on FirebaseException catch (error) {

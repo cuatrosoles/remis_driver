@@ -9,7 +9,8 @@ import 'package:taxi_driver/utils/Extensions/StringExtensions.dart';
 import '../utils/Constants.dart';
 
 class NotificationService {
-  Future<void> sendPushNotifications(String title, String content, {String? id, String? image, String? receiverPlayerId}) async {
+  Future<void> sendPushNotifications(String title, String content,
+      {String? id, String? image, String? receiverPlayerId}) async {
     log('####$receiverPlayerId!');
     Map req = {
       'headings': {
@@ -43,7 +44,7 @@ class NotificationService {
 
     if (res.statusCode.isEven) {
     } else {
-      throw 'Something Went Wrong';
+      throw 'Something Went Wrong4';
     }
   }
 }

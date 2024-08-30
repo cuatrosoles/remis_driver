@@ -1,7 +1,7 @@
 import 'package:taxi_driver/model/CouponData.dart';
 import 'package:taxi_driver/model/ExtraChargeRequestModel.dart';
+import 'package:taxi_driver/model/SelectedAdditionalRequestModel.dart';
 import 'package:taxi_driver/model/UserDetailModel.dart';
-
 import 'RiderModel.dart';
 
 class CurrentRequestModel {
@@ -18,6 +18,8 @@ class CurrentRequestModel {
   UserData? rider;
   Payment? payment;
 
+  ///num? extraChargesAmount;
+
   CurrentRequestModel({
     this.id,
     this.displayName,
@@ -31,6 +33,8 @@ class CurrentRequestModel {
     this.onRideRequest,
     this.rider,
     this.payment,
+
+    ///this.extraChargesAmount,
   });
 
   CurrentRequestModel.fromJson(Map<String, dynamic> json) {
@@ -49,6 +53,8 @@ class CurrentRequestModel {
     rider = json['rider'] != null ? new UserData.fromJson(json['rider']) : null;
     payment =
         json['payment'] != null ? new Payment.fromJson(json['payment']) : null;
+
+    ///extraChargesAmount = json['extra_charges_amount'];
   }
 
   Map<String, dynamic> toJson() {
@@ -71,6 +77,8 @@ class CurrentRequestModel {
     if (this.payment != null) {
       data['payment'] = this.payment!.toJson();
     }
+
+    ///data['extra_charges_amount'] = this.extraChargesAmount;
     return data;
   }
 }
@@ -118,7 +126,10 @@ class OnRideRequest {
   num? paymentId;
   String? paymentType;
   String? paymentStatus;
-  List<ExtraChargeRequestModel>? extraCharges;
+
+  ///List<ExtraChargeRequestModel>? extraCharges;
+  List<String>? extraCharges;
+  List<SelectedAdditionalRequestModel>? selectedAdditional;
   num? couponDiscount;
   var couponCode;
   CouponData? couponData;
@@ -179,6 +190,7 @@ class OnRideRequest {
     this.paymentType,
     this.paymentStatus,
     this.extraCharges,
+    this.selectedAdditional,
     this.couponDiscount,
     this.couponCode,
     this.couponData,
@@ -239,12 +251,23 @@ class OnRideRequest {
     paymentId = json['payment_id'];
     paymentType = json['payment_type'];
     paymentStatus = json['payment_status'];
-    if (json['extra_charges'] != null) {
-      extraCharges = <ExtraChargeRequestModel>[];
-      json['extra_charges'].forEach((v) {
-        extraCharges!.add(new ExtraChargeRequestModel.fromJson(v));
+
+    /////////////////////
+    if (json['selected_additional'] != null) {
+      selectedAdditional = [];
+      json['selected_additional'].forEach((v) {
+        selectedAdditional!.add(new SelectedAdditionalRequestModel.fromJson(v));
       });
     }
+    /////////////
+
+    if (json['extra_charges'] != null) {
+      extraCharges = <String>[];
+      json['extra_charges'].forEach((v) {
+        extraCharges!.add((v));
+      });
+    }
+
     couponDiscount = json['coupon_discount'];
     couponData = json['coupon_data'] != null
         ? CouponData.fromJson(json['coupon_data'])
@@ -310,10 +333,18 @@ class OnRideRequest {
     data['payment_id'] = this.paymentId;
     data['payment_type'] = this.paymentType;
     data['payment_status'] = this.paymentStatus;
-    if (this.extraCharges != null) {
-      data['extra_charges'] =
-          this.extraCharges!.map((v) => v.toJson()).toList();
+
+    //////////////////////////
+    if (this.selectedAdditional != null) {
+      data['selected_additional'] =
+          this.selectedAdditional!.map((v) => v.toJson()).toList();
     }
+    ////////////////////////////
+
+    if (this.extraCharges != null) {
+      data['extra_charges'] = this.extraCharges!.map((v) => v).toList();
+    }
+
     data['coupon_discount'] = this.couponDiscount;
     data['coupon_code'] = this.couponCode;
     data['coupon_data'] = this.couponData;

@@ -40,6 +40,7 @@ import '../utils/Extensions/app_common.dart';
 import '../utils/Images.dart';
 import 'LocationPermissionScreen.dart';
 import 'NotificationScreen.dart';
+import 'dart:math' as Math;
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -66,7 +67,10 @@ class DashboardScreenState extends State<DashboardScreen> {
   List<LatLng> polylineCoordinates = [];
 
   List<ExtraChargeRequestModel> extraChargeList = [];
-  num extraChargeAmount = 0;
+
+  ///num extraChargeAmount = 0;
+  num? extraChargesAmount = 0;
+
   late StreamSubscription<Position> positionStream;
   LocationPermission? permissionData;
 
@@ -93,12 +97,16 @@ class DashboardScreenState extends State<DashboardScreen> {
   Timer? timerUpdateLocation;
   Timer? timerData;
 
+  double? heading;
+
   @override
   void initState() {
     super.initState();
     locationPermission();
+
     Geolocator.getPositionStream().listen((event) {
       driverLocation = LatLng(event.latitude, event.longitude);
+      print('VERIFICO driverLocation 01: $driverLocation');
       setState(() {});
     });
     init();
@@ -141,7 +149,9 @@ class DashboardScreenState extends State<DashboardScreen> {
           markerId: MarkerId("DeliveryBoy"),
           position: driverLocation!,
           icon: driverIcon,
-          infoWindow: InfoWindow(title: ''),
+          infoWindow: InfoWindow(title: 'Driver01'),
+          anchor: const Offset(0.5, 0.5),
+          rotation: heading!.toDouble(),
         ),
       );
     }).catchError((error) {
@@ -168,8 +178,10 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> locationPermission() async {
+    print('VERIFICO STATUS CONTROL');
     serviceStatusStream =
         Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
+      print('VERIFICO STATUS $ServiceStatus.toString()');
       if (status == ServiceStatus.disabled) {
         locationEnable = false;
         launchScreen(navigatorKey.currentState!.overlay!.context,
@@ -200,7 +212,6 @@ class DashboardScreenState extends State<DashboardScreen> {
               jsonDecode(sharedPref.getString(ON_RIDE_MODEL)!));
           setState(() {});
         }
-
         startTimer();
       } else {
         //timerData!.cancel();
@@ -211,6 +222,8 @@ class DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  FlutterRingtonePlayer _ringtonePlayer = FlutterRingtonePlayer();
+
   Future<void> startTimer() async {
     const oneSec = const Duration(seconds: 1);
     timerData = new Timer.periodic(
@@ -220,7 +233,9 @@ class DashboardScreenState extends State<DashboardScreen> {
           Future.delayed(Duration(seconds: 4)).then((value) {
             duration = startTime;
             timer.cancel();
-            FlutterRingtonePlayer.stop();
+
+            ///FlutterRingtonePlayer.stop();
+            _ringtonePlayer.stop();
             sharedPref.remove(ON_RIDE_MODEL);
             sharedPref.remove(IS_TIME2);
             servicesListData = null;
@@ -338,6 +353,7 @@ class DashboardScreenState extends State<DashboardScreen> {
       if (value.onRideRequest != null) {
         appStore.currentRiderRequest = value.onRideRequest;
         servicesListData = value.onRideRequest;
+        extraChargesAmount = value.onRideRequest!.extraChargesAmount;
 
         userDetail(driverId: value.onRideRequest!.riderId);
 
@@ -427,8 +443,12 @@ class DashboardScreenState extends State<DashboardScreen> {
       "end_longitude": driverLocation!.longitude,
       "end_address": endLocationAddress,
       "distance": totalDistance,
+
+      ///"distance": totalDistance + 0.25, /// Modif Mio para Compensar Distancia
+      "extra_charges_amount": extraChargesAmount,
       if (extraChargeList.isNotEmpty) "extra_charges": extraChargeList,
-      if (extraChargeList.isNotEmpty) "extra_charges_amount": extraChargeAmount,
+      ///////if (extraChargeList.isNotEmpty) "extra_charges": extraChargeList,
+      ////if (extraChargeList.isNotEmpty) "extra_charges_amount": extraChargeAmount,
     };
     log(req);
     await completeRide(request: req).then((value) async {
@@ -446,15 +466,19 @@ class DashboardScreenState extends State<DashboardScreen> {
     if (servicesListData != null) _polyLines.clear();
     polylineCoordinates.clear();
     var result = await polylinePoints.getRouteBetweenCoordinates(
-      GOOGLE_MAP_API_KEY,
-      PointLatLng(driverLocation!.latitude, driverLocation!.longitude),
-      servicesListData!.status != IN_PROGRESS
-          ? PointLatLng(
-              double.parse(servicesListData!.startLatitude.validate()),
-              double.parse(servicesListData!.startLongitude.validate()))
-          : PointLatLng(double.parse(servicesListData!.endLatitude.validate()),
-              double.parse(servicesListData!.endLongitude.validate())),
-    );
+        googleApiKey: GOOGLE_MAP_API_KEY,
+        request: PolylineRequest(
+            origin: PointLatLng(
+                driverLocation!.latitude, driverLocation!.longitude),
+            destination: servicesListData!.status != IN_PROGRESS
+                ? PointLatLng(
+                    double.parse(servicesListData!.startLatitude.validate()),
+                    double.parse(servicesListData!.startLongitude.validate()))
+                : PointLatLng(
+                    double.parse(servicesListData!.endLatitude.validate()),
+                    double.parse(servicesListData!.endLongitude.validate())),
+            mode: TravelMode.driving));
+
     if (result.points.isNotEmpty) {
       result.points.forEach((element) {
         polylineCoordinates.add(LatLng(element.latitude, element.longitude));
@@ -476,6 +500,8 @@ class DashboardScreenState extends State<DashboardScreen> {
     markers.clear();
 
     ///source pin
+    print('HEADING2 : ' + heading.toString());
+
     MarkerId id = MarkerId("DeliveryBoy");
     markers.remove(id);
     markers.add(
@@ -484,6 +510,12 @@ class DashboardScreenState extends State<DashboardScreen> {
         position: driverLocation!,
         icon: driverIcon,
         infoWindow: InfoWindow(title: ''),
+        anchor: const Offset(0.5, 0.5),
+
+        ///rotation: (_direction! * (Math.pi / 180) * -1),
+        rotation: heading!.toDouble(),
+
+        ///rotation: calculateBearing(previousPosition, currentPosition) - 90,
       ),
     );
     if (servicesListData != null)
@@ -495,6 +527,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     double.parse(servicesListData!.startLongitude!)),
                 icon: sourceIcon,
                 infoWindow: InfoWindow(title: servicesListData!.startAddress),
+                anchor: const Offset(0.5, 0.5),
               ),
             )
           : markers.add(
@@ -504,6 +537,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     double.parse(servicesListData!.endLongitude!)),
                 icon: destinationIcon,
                 infoWindow: InfoWindow(title: servicesListData!.endAddress),
+                anchor: const Offset(0.5, 0.5),
               ),
             );
   }
@@ -512,19 +546,22 @@ class DashboardScreenState extends State<DashboardScreen> {
   Future<void> startLocationTracking() async {
     _polyLines.clear();
     polylineCoordinates.clear();
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((value) async {
-      await Geolocator.isLocationServiceEnabled().then((value) async {
-        if (locationEnable) {
+
+    await Geolocator.isLocationServiceEnabled().then((value) async {
+      if (locationEnable) {
+        await Geolocator.getCurrentPosition(
+                desiredAccuracy: LocationAccuracy.high)
+            .then((value) async {
           final LocationSettings locationSettings = LocationSettings(
               accuracy: LocationAccuracy.high,
-              distanceFilter: 100,
+              distanceFilter: 10,
               timeLimit: Duration(seconds: 30));
           positionStream =
               Geolocator.getPositionStream(locationSettings: locationSettings)
                   .listen((event) async {
             if (appStore.isLoggedIn) {
               driverLocation = LatLng(event.latitude, event.longitude);
+              heading = event.heading - 90;
               Timer.periodic(Duration(seconds: 3), (t) async {
                 stutasCount = stutasCount! + 1;
                 if (stutasCount == 60) {
@@ -532,9 +569,11 @@ class DashboardScreenState extends State<DashboardScreen> {
                     // "status": "active",
                     "latitude": driverLocation!.latitude.toString(),
                     "longitude": driverLocation!.longitude.toString(),
+                    "heading": heading.toString(),
                   };
                   sharedPref.setDouble(LATITUDE, driverLocation!.latitude);
                   sharedPref.setDouble(LONGITUDE, driverLocation!.longitude);
+                  sharedPref.setDouble(HEADING, heading!);
                   await updateStatus(req).then((value) {
                     setState(() {});
                   }).catchError((error) {
@@ -549,12 +588,13 @@ class DashboardScreenState extends State<DashboardScreen> {
               polylineCoordinates.clear();
               if (servicesListData != null) setMapPins();
               if (servicesListData != null) setPolyLines();
-            }
+            } // isLoggedIn
           }, onError: (error) {
             positionStream.cancel();
           });
-        }
-      });
+        });
+      }
+      ;
     }).catchError((error) {
       Navigator.push(context,
           MaterialPageRoute(builder: (_) => LocationPermissionScreen()));
@@ -623,9 +663,12 @@ class DashboardScreenState extends State<DashboardScreen> {
           MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
       log('${jsonDecode(pt)['result']}');
       if (jsonDecode(pt)['success_type'] == NEW_RIDE_REQUESTED) {
-        FlutterRingtonePlayer.play(
+        ///FlutterRingtonePlayer.play(
+        _ringtonePlayer.play(
           fromAsset: "images/ringtone.mp3",
-          android: AndroidSounds.alarm,
+          android: AndroidSounds.ringtone,
+
+          ///android: AndroidSounds.alarm,
           ios: IosSounds.triTone,
           looping: true,
           volume: 0.1,
@@ -639,7 +682,8 @@ class DashboardScreenState extends State<DashboardScreen> {
         setTimeData();
         startTimer();
       } else if (jsonDecode(pt)['success_type'] == CANCELED) {
-        FlutterRingtonePlayer.stop();
+        ///FlutterRingtonePlayer.stop();
+        _ringtonePlayer.stop();
         sharedPref.remove(ON_RIDE_MODEL);
         sharedPref.remove(IS_TIME2);
         servicesListData = null;
@@ -713,7 +757,9 @@ class DashboardScreenState extends State<DashboardScreen> {
     if (timerData == null) {
       sharedPref.getString(IS_TIME2);
     }
-    FlutterRingtonePlayer.stop();
+
+    ///FlutterRingtonePlayer.stop();
+    _ringtonePlayer.stop();
     super.dispose();
   }
 
@@ -760,8 +806,8 @@ class DashboardScreenState extends State<DashboardScreen> {
                         child: Stack(
                           children: [
                             DraggableScrollableSheet(
-                              initialChildSize: 0.35,
-                              minChildSize: 0.35,
+                              initialChildSize: 0.50,
+                              minChildSize: 0.50,
                               builder: (
                                 BuildContext context,
                                 ScrollController scrollController,
@@ -893,6 +939,61 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                             servicesListData!
                                                                 .startAddress),
                                                     SizedBox(height: 8),
+                                                    ///////////////////////// Mostrar Adicionales del Pedido   //////
+                                                    Container(
+                                                      height: 70,
+                                                      width: 360,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 8,
+                                                              horizontal: 8),
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                  defaultRadius),
+                                                          border: Border.all(
+                                                              color: Colors
+                                                                  .black54)),
+                                                      child: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                              'Adicionales del Pedido',
+                                                              style: TextStyle(
+                                                                  fontSize: 12,
+                                                                  color: Colors
+                                                                      .black87),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .left),
+                                                          Text(
+                                                            servicesListData!
+                                                                    .extraCharges
+                                                                    .toString() +
+                                                                ' (\$: ' +
+                                                                servicesListData!
+                                                                    .extraChargesAmount
+                                                                    .toString() +
+                                                                ')',
+                                                            style: TextStyle(
+                                                                fontSize: 13,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .black87),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+
+                                                    /////////////////////////////////////////////////////
+
+                                                    SizedBox(height: 8),
                                                     Row(
                                                       children: [
                                                         Expanded(
@@ -917,7 +1018,10 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                                       (v) {
                                                                 timerData!
                                                                     .cancel();
-                                                                FlutterRingtonePlayer
+
+                                                                ///FlutterRingtonePlayer
+                                                                ///  .stop();
+                                                                _ringtonePlayer
                                                                     .stop();
                                                                 sharedPref.remove(
                                                                     ON_RIDE_MODEL);
@@ -997,7 +1101,10 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                                       (v) {
                                                                 timerData!
                                                                     .cancel();
-                                                                FlutterRingtonePlayer
+
+                                                                ///FlutterRingtonePlayer
+                                                                /// .stop();
+                                                                _ringtonePlayer
                                                                     .stop();
                                                                 sharedPref.remove(
                                                                     IS_TIME2);
@@ -1009,7 +1116,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                           ),
                                                         ),
                                                       ],
-                                                    )
+                                                    ),
                                                   ],
                                                 ),
                                               ),
@@ -1204,6 +1311,8 @@ class DashboardScreenState extends State<DashboardScreen> {
                                   startAddress: servicesListData!.startAddress),
                               SizedBox(height: 8),
                               if (servicesListData!.status == IN_PROGRESS)
+
+                                ////
                                 if (appStore.extraChargeValue != null)
                                   Observer(builder: (context) {
                                     return Visibility(
@@ -1236,13 +1345,14 @@ class DashboardScreenState extends State<DashboardScreen> {
                                             },
                                           );
                                           if (extraChargeListData != null) {
-                                            log("extraChargeListData   $extraChargeListData");
-                                            extraChargeAmount = 0;
+                                            print(
+                                                "extraChargeListData   $extraChargeListData");
+                                            extraChargesAmount = 0;
                                             extraChargeList.clear();
                                             extraChargeListData
                                                 .forEach((element) {
-                                              extraChargeAmount =
-                                                  extraChargeAmount +
+                                              extraChargesAmount =
+                                                  extraChargesAmount! +
                                                       element.value!;
                                               extraChargeList =
                                                   extraChargeListData;
@@ -1257,24 +1367,25 @@ class DashboardScreenState extends State<DashboardScreen> {
                                               child: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
-                                                        .spaceBetween,
+                                                        .spaceEvenly,
                                                 children: [
                                                   Row(
                                                     children: [
-                                                      Icon(Icons.add, size: 22),
+                                                      Icon(Icons.add, size: 20),
                                                       SizedBox(width: 4),
-                                                      Text(language.extraFees,
-                                                          style:
-                                                              boldTextStyle()),
+                                                      Text(
+                                                          'Tarifas Adicionales',
+                                                          style: TextStyle(
+                                                              fontSize: 14)),
                                                     ],
                                                   ),
-                                                  if (extraChargeAmount != 0)
-                                                    Text(
-                                                        '${language.extraCharges} ${extraChargeAmount.toString()}',
-                                                        style:
-                                                            secondaryTextStyle(
-                                                                color: Colors
-                                                                    .green)),
+
+                                                  ///if (extraChargesAmount != 0)
+                                                  Text(
+                                                      '\$ ${extraChargesAmount.toString()}',
+                                                      style: TextStyle(
+                                                          color: Colors.black87,
+                                                          fontSize: 14)),
                                                 ],
                                               ),
                                             ),
@@ -1283,6 +1394,8 @@ class DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     );
                                   }),
+                              ////
+
                               buttonWidget()
                             ],
                           ),
@@ -1445,119 +1558,130 @@ class DashboardScreenState extends State<DashboardScreen> {
       color: primaryColor,
       textStyle: boldTextStyle(color: Colors.white),
       onTap: () async {
-        if (await checkPermission()) {
-          if (servicesListData!.status == ACCEPTED) {
-            showConfirmDialogCustom(
-                primaryColor: primaryColor,
-                positiveText: language.yes,
-                negativeText: language.no,
-                dialogType: DialogType.CONFIRMATION,
-                title: language.areYouSureYouWantToArriving,
-                context, onAccept: (v) {
-              rideRequest(status: ARRIVING);
-            });
-          } else if (servicesListData!.status == ARRIVING) {
-            showConfirmDialogCustom(
-                primaryColor: primaryColor,
-                positiveText: language.yes,
-                negativeText: language.no,
-                dialogType: DialogType.CONFIRMATION,
-                title: language.areYouSureYouWantToArrived,
-                context, onAccept: (v) {
-              rideRequest(status: ARRIVED);
-            });
-          } else if (servicesListData!.status == ARRIVED) {
-            showDialog(
-              context: context,
-              builder: (_) {
-                return AlertDialog(
-                  content: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(language.enterOtp,
-                              style: boldTextStyle(),
-                              textAlign: TextAlign.center),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: inkWellWidget(
-                              onTap: () {
-                                Navigator.pop(context);
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    shape: BoxShape.circle),
-                                child: Icon(Icons.close,
-                                    size: 20, color: Colors.white),
-                              ),
+        ///if (await checkPermission()) {
+        if (servicesListData!.status == ACCEPTED) {
+          showConfirmDialogCustom(
+              primaryColor: primaryColor,
+              positiveText: language.yes,
+              negativeText: language.no,
+              dialogType: DialogType.CONFIRMATION,
+              title: language.areYouSureYouWantToArriving,
+              context, onAccept: (v) {
+            rideRequest(status: ARRIVING);
+          });
+        } else if (servicesListData!.status == ARRIVING) {
+          showConfirmDialogCustom(
+              primaryColor: primaryColor,
+              positiveText: language.yes,
+              negativeText: language.no,
+              dialogType: DialogType.CONFIRMATION,
+              title: language.areYouSureYouWantToArrived,
+              context, onAccept: (v) {
+            rideRequest(status: ARRIVED);
+          });
+        } else if (servicesListData!.status == ARRIVED) {
+          showDialog(
+            context: context,
+            builder: (_) {
+              return AlertDialog(
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(language.enterOtp,
+                            style: boldTextStyle(),
+                            textAlign: TextAlign.center),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: inkWellWidget(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                  color: primaryColor, shape: BoxShape.circle),
+                              child: Icon(Icons.close,
+                                  size: 20, color: Colors.white),
                             ),
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      Text(language.startRideAskOTP,
-                          style: secondaryTextStyle(size: 12),
-                          textAlign: TextAlign.center),
-                      SizedBox(height: 16),
-                      OTPTextField(
-                        controller: otpController,
-                        length: 4,
-                        width: MediaQuery.of(context).size.width,
-                        fieldWidth: 40,
-                        style: primaryTextStyle(),
-                        textFieldAlignment: MainAxisAlignment.spaceAround,
-                        fieldStyle: FieldStyle.box,
-                        onCompleted: (val) {
-                          otpCheck = val;
-                        },
-                        onChanged: (s) {
-                          //
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      AppButtonWidget(
-                        width: MediaQuery.of(context).size.width,
-                        text: language.confirm,
-                        onTap: () {
-                          if (otpCheck == null ||
-                              otpCheck != servicesListData!.otp) {
-                            return toast(language.pleaseEnterValidOtp);
-                          } else {
-                            Navigator.pop(context);
-                            rideRequest(status: IN_PROGRESS);
-                          }
-                        },
-                      )
-                    ],
-                  ),
-                );
-              },
-            );
-          } else if (servicesListData!.status == IN_PROGRESS) {
-            showConfirmDialogCustom(
-                primaryColor: primaryColor,
-                dialogType: DialogType.ACCEPT,
-                title: language.finishMsg,
-                context,
-                positiveText: language.yes,
-                negativeText: language.no, onAccept: (v) {
-              appStore.setLoading(true);
-              getUserLocation().then((value) async {
-                totalDistance = await calculateDistance(
-                    double.parse(servicesListData!.startLatitude.validate()),
-                    double.parse(servicesListData!.startLongitude.validate()),
-                    driverLocation!.latitude,
-                    driverLocation!.longitude);
-                await completeRideRequest();
-              });
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Text(language.startRideAskOTP,
+                        style: secondaryTextStyle(size: 12),
+                        textAlign: TextAlign.center),
+                    SizedBox(height: 16),
+                    OTPTextField(
+                      controller: otpController,
+                      length: 4,
+                      width: MediaQuery.of(context).size.width,
+                      fieldWidth: 40,
+                      style: primaryTextStyle(),
+                      textFieldAlignment: MainAxisAlignment.spaceAround,
+                      fieldStyle: FieldStyle.box,
+                      onCompleted: (val) {
+                        otpCheck = val;
+                      },
+                      onChanged: (s) {
+                        //
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    AppButtonWidget(
+                      width: MediaQuery.of(context).size.width,
+                      text: language.confirm,
+                      onTap: () {
+                        if (otpCheck == null ||
+                            otpCheck != servicesListData!.otp) {
+                          return toast(language.pleaseEnterValidOtp);
+                        } else {
+                          Navigator.pop(context);
+                          rideRequest(status: IN_PROGRESS);
+                        }
+                      },
+                    )
+                  ],
+                ),
+              );
+            },
+          );
+        } else if (servicesListData!.status == IN_PROGRESS) {
+          showConfirmDialogCustom(
+              primaryColor: primaryColor,
+              dialogType: DialogType.ACCEPT,
+              title: language.finishMsg,
+              context,
+              positiveText: language.yes,
+              negativeText: language.no, onAccept: (v) {
+            appStore.setLoading(true);
+
+            /// aca puede estar el error, que calcula la distancia desde donde esta el driver
+            getUserLocation().then((value) async {
+              totalDistance = await calculateDistance(
+                  double.parse(servicesListData!.startLatitude.validate()),
+                  double.parse(servicesListData!.startLongitude.validate()),
+                  driverLocation!.latitude,
+                  driverLocation!.longitude);
+
+              print('VERIFICO totalDistance $totalDistance');
+              print('VERIFICO driverLocation $driverLocation');
+              print(
+                  'VERIFICO serviceListData ${servicesListData!.startAddress.validate()}');
+              ////////////////////////////////
+
+              await completeRideRequest();
+
+              ///
             });
-          }
+          });
         }
+
+        ///} // checkPermission
       },
     );
   }

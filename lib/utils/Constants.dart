@@ -3,12 +3,12 @@ import 'package:mqtt_client/mqtt_server_client.dart';
 
 const mAppName = 'Remises Saenz Peña Driver';
 
-/// const DOMAIN_URL =
-///    'https://remises.juanprogramador.com'; // Don't add slash at the end of the url
+////const DOMAIN_URL =
+////    'https://remises.juanprogramador.com'; // Don't add slash at the end of the url
 const DOMAIN_URL =
     'https://saenzpenaremis.online'; // Don't add slash at the end of the url
 
-const GOOGLE_MAP_API_KEY = 'AIzaSyD4HpgVsecTY68cxEUgPLjHNwE29B8KUH4';
+const GOOGLE_MAP_API_KEY = 'AIzaSyALU--rsdhd4lwvHyolP0x1tg4Dqcj-PI8';
 
 final client = MqttServerClient.withPort("broker.hivemq.com", "", 1883);
 const MQTT_UNIQUE_TOPIC_NAME =
@@ -36,7 +36,7 @@ const digitAfterDecimal = 2;
 //region PDF configuration
 const PDF_NAME = 'Remises Saenz Peña';
 const PDF_ADDRESS = 'Saenz Peña, Chaco, Argentina';
-const PDF_CONTACT_NUMBER = '+54 8888888888';
+const PDF_CONTACT_NUMBER = '3644-423361	/ 3644-501040';
 
 //region Walkthrough
 const walk_title1 = "Obtener pedidos de viaje";
@@ -95,6 +95,7 @@ const IS_ONLINE = 'IS_ONLINE';
 const IS_Verified_Driver = 'is_verified_driver';
 const LATITUDE = 'LATITUDE';
 const LONGITUDE = 'LONGITUDE';
+const HEADING = 'HEADING';
 
 //region user roles
 const ADMIN = 'admin';

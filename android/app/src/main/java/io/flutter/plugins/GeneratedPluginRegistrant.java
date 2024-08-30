@@ -61,6 +61,11 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin firebase_storage, io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new com.hemanthraj.fluttercompass.FlutterCompassPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin flutter_compass, com.hemanthraj.fluttercompass.FlutterCompassPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new com.jayesh.flutter_contact_picker.FlutterContactPickerPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin flutter_native_contact_picker, com.jayesh.flutter_contact_picker.FlutterContactPickerPlugin", e);

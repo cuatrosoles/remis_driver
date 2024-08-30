@@ -36,10 +36,16 @@ class AdditionalFeesModel {
   int? id;
   int? status;
   String? title;
+  int? cost;
   String? updatedAt;
 
   AdditionalFeesModel(
-      {this.createdAt, this.id, this.status, this.title, this.updatedAt});
+      {this.createdAt,
+      this.id,
+      this.status,
+      this.title,
+      this.cost,
+      this.updatedAt});
 
   factory AdditionalFeesModel.fromJson(Map<String, dynamic> json) {
     return AdditionalFeesModel(
@@ -47,6 +53,7 @@ class AdditionalFeesModel {
       id: json['id'],
       status: json['status'],
       title: json['title'],
+      cost: json['cost'],
       updatedAt: json['updated_at'],
     );
   }
@@ -57,6 +64,7 @@ class AdditionalFeesModel {
     data['id'] = this.id;
     data['status'] = this.status;
     data['title'] = this.title;
+    data['cost'] = this.cost;
     data['updated_at'] = this.updatedAt;
     return data;
   }
