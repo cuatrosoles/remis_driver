@@ -43,13 +43,13 @@
 		<true/>
 	</dict>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Mighty Driver requires address permission access to get the current location of the user.</string>
+	<string>Remisses Saenz Peña Driver requires address permission access to get the current location of the user.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Mighty Driver  requires address permission access to get the current location of the user.</string>
+	<string>Remisses Saenz Peña Driver  requires address permission access to get the current location of the user.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Mighty Driver requires access to the photo library to upload your profile photo.</string>
+	<string>Remisses Saenz Peña Driver requires access to the photo library to upload your profile photo.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Mighty Driver requires access to the photo library to upload your profile photo.</string>
+	<string>Remisses Saenz Peña Driver requires access to the photo library to upload your profile photo.</string>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 	<key>CFBundleVersion</key>
