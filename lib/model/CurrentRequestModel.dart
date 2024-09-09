@@ -92,6 +92,7 @@ class OnRideRequest {
   int? rideAttempt;
   String? otp;
   num? totalAmount;
+  num? estimateFare;
   num? subtotal;
   num? extraChargesAmount;
   int? driverId;
@@ -155,6 +156,7 @@ class OnRideRequest {
     this.rideAttempt,
     this.otp,
     this.totalAmount,
+    this.estimateFare,
     this.subtotal,
     this.extraChargesAmount,
     this.driverId,
@@ -217,6 +219,7 @@ class OnRideRequest {
     rideAttempt = json['ride_attempt'];
     otp = json['otp'];
     totalAmount = json['total_amount'];
+    estimateFare = json['estimate_fare'];
     subtotal = json['subtotal'];
     extraChargesAmount = json['extra_charges_amount'];
     driverId = json['driver_id'];
@@ -299,6 +302,7 @@ class OnRideRequest {
     data['ride_attempt'] = this.rideAttempt;
     data['otp'] = this.otp;
     data['total_amount'] = this.totalAmount;
+    data['estimate_fare'] = this.estimateFare;
     data['subtotal'] = this.subtotal;
     data['extra_charges_amount'] = this.extraChargesAmount;
     data['driver_id'] = this.driverId;

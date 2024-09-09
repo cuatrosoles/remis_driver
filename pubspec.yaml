@@ -33,7 +33,7 @@ dependencies:
   flutter_staggered_animations: ^1.1.1
   bottom_picker: ^2.3.2
   country_code_picker: ^3.0.0
-  flutter_native_contact_picker: ^0.0.5
+  flutter_native_contact_picker: any
   timeline_tile: ^2.0.0
   flutter_vector_icons: ^2.0.0
   flutter_switch: ^0.3.2
@@ -45,10 +45,11 @@ dependencies:
   #MAP
   geolocator: ^12.0.0
   geocoding: ^3.0.0
-  google_maps_flutter: ^2.5.0
+  google_maps_flutter: ^2.9.0
   flutter_polyline_points: ^2.0.0
   location: ^6.0.2
   flutter_compass: ^0.8.0
+  gmaps_by_road_distance_calculator: ^2.0.6
 
   #IMAGES
   image_picker: ^1.0.4

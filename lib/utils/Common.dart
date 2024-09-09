@@ -25,6 +25,8 @@ import 'Colors.dart';
 import 'Constants.dart';
 import 'Extensions/app_common.dart';
 
+///import 'package:google_maps/google_maps.dart' as GMaps;
+
 Widget dotIndicator(list, i) {
   return SizedBox(
     height: 16,
@@ -287,7 +289,26 @@ double calculateDistance(lat1, lon1, lat2, lon2) {
       cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
   return (12742 * asin(sqrt(a))).toStringAsFixed(digitAfterDecimal).toDouble();
 }
-/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+/*
+Future<double> calculateDrivingDistance(LatLng origen, LatLng destino) async {
+  final googleMaps = GoogleMaps(
+    apiKey: googleAPIKey,
+  );
+
+  final directions = await googleMaps.directions(
+    origin: origen,
+    destination: destino,
+    mode: 'driving',
+  );
+
+  final distancia = directions.routes.first.legs.first.distance.value;
+
+  return distancia;
+}
+*/
+///
 
 Widget totalCount({String? title, num? amount, bool? isTotal = false}) {
   return Row(

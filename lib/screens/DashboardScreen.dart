@@ -41,6 +41,7 @@ import '../utils/Images.dart';
 import 'LocationPermissionScreen.dart';
 import 'NotificationScreen.dart';
 import 'dart:math' as Math;
+import 'package:gmaps_by_road_distance_calculator/gmaps_by_road_distance_calculator.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -444,11 +445,10 @@ class DashboardScreenState extends State<DashboardScreen> {
       "end_address": endLocationAddress,
       "distance": totalDistance,
 
-      ///"distance": totalDistance + 0.25, /// Modif Mio para Compensar Distancia
+      ////"distance": totalDistance + (totalDistance * 50 / 100),
+      /// Modif Mio para Compensar Distancia
       "extra_charges_amount": extraChargesAmount,
       if (extraChargeList.isNotEmpty) "extra_charges": extraChargeList,
-      ///////if (extraChargeList.isNotEmpty) "extra_charges": extraChargeList,
-      ////if (extraChargeList.isNotEmpty) "extra_charges_amount": extraChargeAmount,
     };
     log(req);
     await completeRide(request: req).then((value) async {
@@ -498,8 +498,6 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> setMapPins() async {
     markers.clear();
-
-    ///source pin
     print('HEADING2 : ' + heading.toString());
 
     MarkerId id = MarkerId("DeliveryBoy");
@@ -511,11 +509,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         icon: driverIcon,
         infoWindow: InfoWindow(title: ''),
         anchor: const Offset(0.5, 0.5),
-
-        ///rotation: (_direction! * (Math.pi / 180) * -1),
         rotation: heading!.toDouble(),
-
-        ///rotation: calculateBearing(previousPosition, currentPosition) - 90,
       ),
     );
     if (servicesListData != null)
@@ -938,7 +932,8 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                         startAddress:
                                                             servicesListData!
                                                                 .startAddress),
-                                                    SizedBox(height: 8),
+                                                    SizedBox(height: 6),
+
                                                     ///////////////////////// Mostrar Adicionales del Pedido   //////
                                                     Container(
                                                       height: 70,
@@ -961,6 +956,21 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                             CrossAxisAlignment
                                                                 .start,
                                                         children: [
+                                                          /*
+                                                          Text(
+                                                              'Estimado del Viaje: ' +
+                                                                  servicesListData!
+                                                                      .estimateFare
+                                                                      .toString(),
+                                                              style: TextStyle(
+                                                                  fontSize: 12,
+                                                                  color: Colors
+                                                                      .black87),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .left),
+                                                          SizedBox(height: 6),
+                                                          */
                                                           Text(
                                                               'Adicionales del Pedido',
                                                               style: TextStyle(
@@ -972,13 +982,17 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                                       .left),
                                                           Text(
                                                             servicesListData!
-                                                                    .extraCharges
-                                                                    .toString() +
-                                                                ' (\$: ' +
-                                                                servicesListData!
-                                                                    .extraChargesAmount
-                                                                    .toString() +
-                                                                ')',
+                                                                        .extraChargesAmount !=
+                                                                    0
+                                                                ? servicesListData!
+                                                                        .extraCharges
+                                                                        .toString() +
+                                                                    ' (\$: ' +
+                                                                    servicesListData!
+                                                                        .extraChargesAmount
+                                                                        .toString() +
+                                                                    ')'
+                                                                : 'No hay adicionales',
                                                             style: TextStyle(
                                                                 fontSize: 13,
                                                                 fontWeight:
@@ -1379,13 +1393,13 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                               fontSize: 14)),
                                                     ],
                                                   ),
-
-                                                  ///if (extraChargesAmount != 0)
                                                   Text(
-                                                      '\$ ${extraChargesAmount.toString()}',
+                                                      extraChargesAmount != 0
+                                                          ? '\$ ${extraChargesAmount.toString()}'
+                                                          : 'Ninguna',
                                                       style: TextStyle(
                                                           color: Colors.black87,
-                                                          fontSize: 14)),
+                                                          fontSize: 14))
                                                 ],
                                               ),
                                             ),
@@ -1661,13 +1675,42 @@ class DashboardScreenState extends State<DashboardScreen> {
             appStore.setLoading(true);
 
             /// aca puede estar el error, que calcula la distancia desde donde esta el driver
+
             getUserLocation().then((value) async {
+              ByRoadDistanceCalculator distanceCalulator =
+                  ByRoadDistanceCalculator();
+
+              ///getDistance() async {
+              var distanceInKm = await distanceCalulator.getDistance(
+                  GOOGLE_MAP_API_KEY,
+
+                  ///startLatitude: 28.657030, // Starting latittude
+                  startLatitude:
+                      double.parse(servicesListData!.startLatitude.validate()),
+
+                  ///startLongitude: 28.613448, // Start longitude
+                  startLongitude:
+                      double.parse(servicesListData!.startLongitude.validate()),
+
+                  ///destinationLatitude: 77.243118, // Destination latitide
+                  destinationLatitude: driverLocation!.latitude,
+
+                  ///destinationLongitude: 77.232304, // Destination longitude
+                  destinationLongitude: driverLocation!.longitude,
+                  travelMode: TravelModes.driving);
+
+              ///return distanceInKm;
+              ///}
+
+              totalDistance = double.parse(distanceInKm);
+
+              /*
               totalDistance = await calculateDistance(
                   double.parse(servicesListData!.startLatitude.validate()),
                   double.parse(servicesListData!.startLongitude.validate()),
                   driverLocation!.latitude,
                   driverLocation!.longitude);
-
+              */
               print('VERIFICO totalDistance $totalDistance');
               print('VERIFICO driverLocation $driverLocation');
               print(

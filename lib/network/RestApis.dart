@@ -511,6 +511,16 @@ Future<LDBaseResponse> saveComplain({required Map request}) async {
       request: request)));
 }
 
+/////////////  AGREGADO 6-9-2024 para FIXEAR la distancia   ////////////////
+/*
+Future<EstimatePriceModel> estimatePriceList(Map request) async {
+  return EstimatePriceModel.fromJson(await handleResponse(
+      await buildHttpResponse('estimate-price-time',
+          method: HttpMethod.POST, request: request)));
+}
+*/
+/////////////  end agregado para fixear la distancia   ///////////////////////
+
 Future<LDBaseResponse> completeRide({required Map request}) async {
   return LDBaseResponse.fromJson(await handleResponse(await buildHttpResponse(
       'complete-riderequest',
