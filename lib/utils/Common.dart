@@ -331,9 +331,12 @@ Widget totalCount({String? title, num? amount, bool? isTotal = false}) {
 Future<bool> checkPermission() async {
   // Request app level location permission
   LocationPermission locationPermission = await Geolocator.requestPermission();
-
+  /*
   if (locationPermission == LocationPermission.whileInUse ||
       locationPermission == LocationPermission.always) {
+  */
+
+  if (locationPermission == LocationPermission.always) {
     // Check system level location permission
     if (!await Geolocator.isLocationServiceEnabled()) {
       return await Geolocator.openLocationSettings()

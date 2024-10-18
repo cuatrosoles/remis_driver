@@ -136,9 +136,16 @@ class DashboardScreenState extends State<DashboardScreen> {
     destinationIcon = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(devicePixelRatio: 2.5), DestinationIcon);
 
+    //// 03-10-2024   //////
+    /*
+    launchScreen(navigatorKey.currentState!.overlay!.context,
+        LocationPermissionScreen());
+    */
+
     if (appStore.isLoggedIn) {
       startLocationTracking();
     }
+
     setSourceAndDestinationIcons();
     await getAppSetting().then((value) {
       appStore.setWalletPresetTopUpAmount(value.walletSetting!
@@ -179,10 +186,15 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> locationPermission() async {
-    print('VERIFICO STATUS CONTROL');
+    permissionData = await Geolocator.checkPermission();
+    if (permissionData == LocationPermission.denied ||
+        permissionData == LocationPermission.whileInUse) {
+      launchScreen(navigatorKey.currentState!.overlay!.context,
+          LocationPermissionScreen());
+    }
     serviceStatusStream =
         Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
-      print('VERIFICO STATUS $ServiceStatus.toString()');
+      print('VERIFICO STATUS $status.toString()');
       if (status == ServiceStatus.disabled) {
         locationEnable = false;
         launchScreen(navigatorKey.currentState!.overlay!.context,
@@ -190,12 +202,14 @@ class DashboardScreenState extends State<DashboardScreen> {
       } else if (status == ServiceStatus.enabled) {
         locationEnable = true;
         startLocationTracking();
-
         if (Navigator.canPop(navigatorKey.currentState!.overlay!.context)) {
           Navigator.pop(navigatorKey.currentState!.overlay!.context);
         }
       }
-    });
+    })
+          ..onError((error) {
+            print('Permisos Error01: ' + error.toString());
+          });
   }
 
   Future<void> setTimeData() async {
@@ -540,8 +554,13 @@ class DashboardScreenState extends State<DashboardScreen> {
   Future<void> startLocationTracking() async {
     _polyLines.clear();
     polylineCoordinates.clear();
-
+    print('ESTATUS CONTROL');
+    ///// 08-10-2024
+    /*
+    locationPermission();
     await Geolocator.isLocationServiceEnabled().then((value) async {
+      print('ESTATUS 1: ' + value.toString());
+      locationEnable = value;
       if (locationEnable) {
         await Geolocator.getCurrentPosition(
                 desiredAccuracy: LocationAccuracy.high)
@@ -568,11 +587,13 @@ class DashboardScreenState extends State<DashboardScreen> {
                   sharedPref.setDouble(LATITUDE, driverLocation!.latitude);
                   sharedPref.setDouble(LONGITUDE, driverLocation!.longitude);
                   sharedPref.setDouble(HEADING, heading!);
+
                   await updateStatus(req).then((value) {
                     setState(() {});
                   }).catchError((error) {
                     log(error);
                   });
+
                   stutasCount = 0;
                 }
               });
@@ -589,6 +610,56 @@ class DashboardScreenState extends State<DashboardScreen> {
         });
       }
       ;
+    }).catchError((error) {
+      Navigator.push(context,
+          MaterialPageRoute(builder: (_) => LocationPermissionScreen()));
+    });
+    */
+
+    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((value) async {
+      await Geolocator.isLocationServiceEnabled().then((value) async {
+        if (locationEnable) {
+          final LocationSettings locationSettings = LocationSettings(
+              accuracy: LocationAccuracy.high,
+              distanceFilter: 100,
+              timeLimit: Duration(seconds: 30));
+          positionStream =
+              Geolocator.getPositionStream(locationSettings: locationSettings)
+                  .listen((event) async {
+            if (appStore.isLoggedIn) {
+              driverLocation = LatLng(event.latitude, event.longitude);
+              heading = event.heading - 90;
+              Timer.periodic(Duration(seconds: 3), (t) async {
+                stutasCount = stutasCount! + 1;
+                if (stutasCount == 60) {
+                  Map req = {
+                    // "status": "active",
+                    "latitude": driverLocation!.latitude.toString(),
+                    "longitude": driverLocation!.longitude.toString(),
+                  };
+                  sharedPref.setDouble(LATITUDE, driverLocation!.latitude);
+                  sharedPref.setDouble(LONGITUDE, driverLocation!.longitude);
+                  await updateStatus(req).then((value) {
+                    setState(() {});
+                  }).catchError((error) {
+                    log(error);
+                  });
+                  stutasCount = 0;
+                }
+              });
+
+              setMapPins();
+              _polyLines.clear();
+              polylineCoordinates.clear();
+              if (servicesListData != null) setMapPins();
+              if (servicesListData != null) setPolyLines();
+            }
+          }, onError: (error) {
+            positionStream.cancel();
+          });
+        }
+      });
     }).catchError((error) {
       Navigator.push(context,
           MaterialPageRoute(builder: (_) => LocationPermissionScreen()));
@@ -1164,60 +1235,72 @@ class DashboardScreenState extends State<DashboardScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               ////////////////
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  inkWellWidget(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (_) {
-                                          return AlertDialog(
-                                            contentPadding: EdgeInsets.all(0),
-                                            content: AlertScreen(
-                                                rideId: servicesListData!.id,
-                                                regionId:
-                                                    servicesListData!.regionId),
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: Container(
-                                      margin:
-                                          EdgeInsets.only(top: 2, bottom: 10),
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                          border:
-                                              Border.all(color: dividerColor),
-                                          color: appStore.isDarkMode
-                                              ? scaffoldColorDark
-                                              : scaffoldColorLight,
-                                          borderRadius: BorderRadius.circular(
-                                              defaultRadius)),
-                                      child: AppButtonWidget(
-                                        width:
-                                            MediaQuery.of(context).size.width /
-                                                6,
-                                        text: language.cancelRide,
-                                        onTap: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return CancelOrderDialog(
-                                                onCancel: (reason) {
-                                                  cancelRequest(reason);
-                                                },
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                ],
-                              ),
+                              servicesListData!.status != IN_PROGRESS
+                                  ? Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        inkWellWidget(
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (_) {
+                                                return AlertDialog(
+                                                  contentPadding:
+                                                      EdgeInsets.all(0),
+                                                  content: AlertScreen(
+                                                      rideId:
+                                                          servicesListData!.id,
+                                                      regionId:
+                                                          servicesListData!
+                                                              .regionId),
+                                                );
+                                              },
+                                            );
+                                          },
+
+                                          ///
+                                          child: Container(
+                                            margin: EdgeInsets.only(
+                                                top: 2, bottom: 10),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    color: dividerColor),
+                                                color: appStore.isDarkMode
+                                                    ? scaffoldColorDark
+                                                    : scaffoldColorLight,
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        defaultRadius)),
+                                            child: AppButtonWidget(
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  6,
+                                              text: language.cancelRide,
+                                              onTap: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return CancelOrderDialog(
+                                                      onCancel: (reason) {
+                                                        cancelRequest(reason);
+                                                      },
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                            ),
+                                          ),
+
+                                          //// boton cancelar viaje
+                                        ),
+                                        SizedBox(width: 8),
+                                      ],
+                                    )
+                                  : SizedBox(),
                               ////////////////
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1417,7 +1500,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                       )
                 : SizedBox(),
             Positioned(
-              top: context.statusBarHeight + 4,
+              top: context.statusBarHeight + 20,
               right: 8,
               left: 8,
               child: topWidget(),

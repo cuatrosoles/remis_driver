@@ -4,6 +4,7 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:taxi_driver/location_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:geolocator/geolocator.dart';
@@ -39,7 +40,6 @@ int? stutasCount = 0;
 
 late List<FileModel> fileList = [];
 bool mIsEnterKey = false;
-// String mSelectedImage = "assets/default_wallpaper.png";
 
 ChatMessageService chatMessageService = ChatMessageService();
 NotificationService notificationService = NotificationService();
@@ -98,6 +98,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void init() async {
+    await LocationService.startService();
     connectivitySubscription = Connectivity().onConnectivityChanged.listen((e) {
       if (e == ConnectivityResult.none) {
         log('not connected');

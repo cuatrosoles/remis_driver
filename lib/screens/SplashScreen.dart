@@ -27,7 +27,6 @@ class SplashScreenState extends State<SplashScreen> {
 
   void init() async {
     await driverDetail();
-
     await Future.delayed(Duration(seconds: 2));
     if (sharedPref.getBool(IS_FIRST_TIME) ?? true) {
       await Geolocator.requestPermission().then((value) async {
