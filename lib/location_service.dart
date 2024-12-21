@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:taxi_driver/main.dart';
@@ -12,8 +11,8 @@ class LocationService {
     await service.configure(
       androidConfiguration: AndroidConfiguration(
         onStart: onStart,
-        autoStart: true,
-        isForegroundMode: true,
+        autoStart: false,
+        isForegroundMode: false,
       ),
       iosConfiguration: IosConfiguration(
         autoStart: true,

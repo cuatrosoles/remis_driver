@@ -88,7 +88,7 @@ dependencies:
   the_apple_sign_in: ^1.1.1
 
   #MQTT
-  mqtt_client: ^10.0.0
+  mqtt_client: ^10.3.0
 
   #DOWNLOAD INVOICE PDF
   pdf: ^3.10.8

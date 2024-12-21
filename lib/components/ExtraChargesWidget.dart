@@ -3,6 +3,7 @@ import 'package:taxi_driver/utils/Extensions/StringExtensions.dart';
 import '../main.dart';
 import '../model/AdditionalFeesList.dart';
 import '../model/ExtraChargeRequestModel.dart';
+import '../model/ExtraChargeDriverRequestModel.dart';
 import '../network/RestApis.dart';
 import '../utils/Common.dart';
 import '../utils/Constants.dart';
@@ -11,9 +12,9 @@ import '../utils/Extensions/app_common.dart';
 import '../utils/Extensions/app_textfield.dart';
 
 class ExtraChargesWidget extends StatefulWidget {
-  final List<ExtraChargeRequestModel>? data;
+  final List<ExtraChargeDriverRequestModel>? data;
 
-  ExtraChargesWidget({this.data});
+  ExtraChargesWidget({required this.data});
 
   @override
   ExtraChargesWidgetState createState() => ExtraChargesWidgetState();
@@ -23,11 +24,9 @@ class ExtraChargesWidgetState extends State<ExtraChargesWidget> {
   TextEditingController extraController = TextEditingController();
   List<AdditionalFeesModel> additionalFeesData = [];
   String? extraCharges;
-
-  List<ExtraChargeRequestModel> list = [];
+  List<ExtraChargeDriverRequestModel> list = [];
 
   num total = 50;
-
   bool isLoad = false;
 
   @override
@@ -50,7 +49,6 @@ class ExtraChargesWidgetState extends State<ExtraChargesWidget> {
     });
     if (widget.data != null && widget.data!.isNotEmpty) {
       list.addAll(widget.data!);
-
       setState(() {});
     }
   }
@@ -67,7 +65,8 @@ class ExtraChargesWidgetState extends State<ExtraChargesWidget> {
       child: Stack(
         children: [
           !isLoad && additionalFeesData.isNotEmpty
-              ? StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+              ? StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,24 +74,40 @@ class ExtraChargesWidgetState extends State<ExtraChargesWidget> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(language.addExtraCharges, style: boldTextStyle()),
+                          Text(language.addExtraCharges,
+                              style: boldTextStyle()),
                           CloseButton(),
                         ],
                       ),
                       Container(
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(defaultRadius), color: Colors.grey.withOpacity(0.15)),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(defaultRadius),
+                            color: Colors.grey.withOpacity(0.15)),
                         width: MediaQuery.of(context).size.width,
                         child: DropdownButton<String>(
-                          hint: Padding(padding: EdgeInsets.only(left: 16,right: 16), child: Text(language.applyExtraCharges)),
+                          hint: Padding(
+                              padding: EdgeInsets.only(left: 16, right: 16),
+                              child: Text(language.applyExtraCharges)),
                           value: extraCharges,
                           isExpanded: true,
                           underline: SizedBox(),
                           items: additionalFeesData.map((e) {
                             return DropdownMenuItem(
-                              value: e.title,
+                              ///value: e.title,
+                              value: e.title! + "|" + (e.cost).toString(),
                               child: Padding(
-                                padding: EdgeInsets.only(left: 16,right: 16),
-                                child: Text(e.title.validate(), style: primaryTextStyle()),
+                                padding: EdgeInsets.only(left: 16, right: 16),
+                                child: Row(
+                                  children: [
+                                    Text(e.title.validate(),
+                                        style: primaryTextStyle()),
+                                    Spacer(),
+                                    Text('(\$' + (e.cost).toString() + ')',
+                                        style: TextStyle(
+                                            color: Colors.black54,
+                                            fontSize: 11)),
+                                  ],
+                                ),
                               ),
                             );
                           }).toList(),
@@ -100,8 +115,13 @@ class ExtraChargesWidgetState extends State<ExtraChargesWidget> {
                             extraCharges = val!;
                             if (list.isNotEmpty) {
                               list.forEach((element) {
+                                print('extraChargeListDriverELEMENT: ' +
+                                    (element.key).toString());
+                                print('extraChargeListDriverVAL: ' +
+                                    (element.key).toString());
                                 if (element.key == val) {
-                                  extraController.text = element.value.toString();
+                                  extraController.text =
+                                      element.value.toString();
                                 }
                               });
                             }
@@ -118,27 +138,58 @@ class ExtraChargesWidgetState extends State<ExtraChargesWidget> {
                               controller: extraController,
                               autoFocus: false,
                               textFieldType: TextFieldType.PHONE,
-                              errorThisFieldRequired: language.thisFieldRequired,
-                              decoration: inputDecoration(context, label: language.enterAmount),
+                              errorThisFieldRequired:
+                                  language.thisFieldRequired,
+                              decoration: inputDecoration(context,
+                                  label: language.enterAmount),
                             ),
                           ),
                           SizedBox(width: 16),
                           Expanded(
                             child: AppButtonWidget(
-                              child: Icon(Icons.add,color: Colors.white),
+                              child: Icon(Icons.add, color: Colors.white),
                               onTap: () {
+                                print('extraChargeListDriverLISTA1: ' +
+                                    extraCharges!);
+                                extraCharges!.split("|");
                                 if (extraCharges != null) {
                                   if (extraController.text.isNotEmpty) {
                                     if (list.isNotEmpty) {
-                                      if (list.any((element) => element.key == extraCharges)) {
-                                        ExtraChargeRequestModel data = list.firstWhere((element) => element.key == extraCharges);
+                                      if (list.any((element) =>
+                                          element.key ==
+                                          extraCharges!.split("|")[0])) {
+                                        ExtraChargeDriverRequestModel data =
+                                            list.firstWhere((element) =>
+                                                element.key ==
+                                                extraCharges!.split("|")[0]);
                                         list.remove(data);
-                                        list.add(ExtraChargeRequestModel(key: extraCharges, value: int.parse(extraController.text.trim())));
+                                        list.add(ExtraChargeDriverRequestModel(
+                                          ///key: extraCharges,
+                                          ///value: int.parse(
+                                          ///    extraController.text.trim())));
+                                          key: extraCharges!.split("|")[0],
+                                          value: int.parse(
+                                              extraCharges!.split("|")[1]),
+                                        ));
                                       } else {
-                                        list.add(ExtraChargeRequestModel(key: extraCharges, value: int.parse(extraController.text.trim())));
+                                        list.add(ExtraChargeDriverRequestModel(
+                                          ///key: extraCharges,
+                                          ///value: int.parse(
+                                          ///    extraController.text.trim())));
+                                          key: extraCharges!.split("|")[0],
+                                          value: int.parse(
+                                              extraCharges!.split("|")[1]),
+                                        ));
                                       }
                                     } else {
-                                      list.add(ExtraChargeRequestModel(key: extraCharges, value: int.parse(extraController.text.trim())));
+                                      list.add(ExtraChargeDriverRequestModel(
+                                        ///key: extraCharges,
+                                        ///value: int.parse(
+                                        ///    extraController.text.trim())));
+                                        key: extraCharges!.split("|")[0],
+                                        value: int.parse(
+                                            extraCharges!.split("|")[1]),
+                                      ));
                                     }
                                     hideKeyboard(context);
                                     extraController.clear();
@@ -162,8 +213,12 @@ class ExtraChargesWidgetState extends State<ExtraChargesWidget> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Expanded(child: Text(language.title, style: boldTextStyle())),
-                                Expanded(child: Text(language.charges, style: boldTextStyle())),
+                                Expanded(
+                                    child: Text(language.title,
+                                        style: boldTextStyle())),
+                                Expanded(
+                                    child: Text(language.charges,
+                                        style: boldTextStyle())),
                                 Spacer(),
                               ],
                             ),
@@ -171,13 +226,16 @@ class ExtraChargesWidgetState extends State<ExtraChargesWidget> {
                             Column(
                               children: list.map((e) {
                                 return Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Expanded(
-                                      child: Text(e.key.validate(), style: primaryTextStyle()),
+                                      child: Text(e.key.validate(),
+                                          style: primaryTextStyle()),
                                     ),
                                     Expanded(
-                                      child: Text(e.value.toString(), style: primaryTextStyle()),
+                                      child: Text(e.value.toString(),
+                                          style: primaryTextStyle()),
                                     ),
                                     Expanded(
                                       child: inkWellWidget(
@@ -201,6 +259,8 @@ class ExtraChargesWidgetState extends State<ExtraChargesWidget> {
                             child: AppButtonWidget(
                               text: language.saveCharges,
                               onTap: () {
+                                ///print('extraChargeListDriverLISTA2: ' +
+                                ///    list.toString());
                                 Navigator.pop(context, list);
                               },
                             ),

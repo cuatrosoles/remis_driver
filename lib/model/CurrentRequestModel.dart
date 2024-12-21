@@ -1,5 +1,6 @@
 import 'package:taxi_driver/model/CouponData.dart';
 import 'package:taxi_driver/model/ExtraChargeRequestModel.dart';
+import 'package:taxi_driver/model/ExtraChargeDriverRequestModel.dart';
 import 'package:taxi_driver/model/SelectedAdditionalRequestModel.dart';
 import 'package:taxi_driver/model/UserDetailModel.dart';
 import 'RiderModel.dart';
@@ -128,7 +129,7 @@ class OnRideRequest {
   String? paymentType;
   String? paymentStatus;
 
-  ///List<ExtraChargeRequestModel>? extraCharges;
+  List<ExtraChargeRequestModel>? extraChargesDriver;
   List<String>? extraCharges;
   List<SelectedAdditionalRequestModel>? selectedAdditional;
   num? couponDiscount;
@@ -191,6 +192,7 @@ class OnRideRequest {
     this.paymentId,
     this.paymentType,
     this.paymentStatus,
+    this.extraChargesDriver,
     this.extraCharges,
     this.selectedAdditional,
     this.couponDiscount,
@@ -263,6 +265,13 @@ class OnRideRequest {
       });
     }
     /////////////
+
+    if (json['extra_charges_driver'] != null) {
+      extraChargesDriver = <ExtraChargeRequestModel>[];
+      json['extra_charges_driver'].forEach((v) {
+        extraChargesDriver!.add((v));
+      });
+    }
 
     if (json['extra_charges'] != null) {
       extraCharges = <String>[];
@@ -344,6 +353,11 @@ class OnRideRequest {
           this.selectedAdditional!.map((v) => v.toJson()).toList();
     }
     ////////////////////////////
+
+    if (this.extraChargesDriver != null) {
+      data['extra_charges_driver'] =
+          this.extraChargesDriver!.map((v) => v.toJson()).toList();
+    }
 
     if (this.extraCharges != null) {
       data['extra_charges'] = this.extraCharges!.map((v) => v).toList();

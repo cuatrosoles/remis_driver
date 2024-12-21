@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:dotted_line/dotted_line.dart';
@@ -26,6 +28,7 @@ import '../components/CancelOrderDialog.dart';
 import '../main.dart';
 import '../model/CurrentRequestModel.dart';
 import '../model/ExtraChargeRequestModel.dart';
+import '../model/ExtraChargeDriverRequestModel.dart';
 import '../model/RiderModel.dart';
 import '../model/UserDetailModel.dart';
 import '../model/WalletDetailModel.dart';
@@ -68,8 +71,9 @@ class DashboardScreenState extends State<DashboardScreen> {
   List<LatLng> polylineCoordinates = [];
 
   List<ExtraChargeRequestModel> extraChargeList = [];
+  List<ExtraChargeDriverRequestModel> extraChargeListDriver = [];
 
-  ///num extraChargeAmount = 0;
+  num? extraChargeAmount = 0;
   num? extraChargesAmount = 0;
 
   late StreamSubscription<Position> positionStream;
@@ -117,17 +121,17 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   void init() async {
+    getCurrentRequest();
+    mqttForUser();
     LiveStream().on(CHANGE_LANGUAGE, (p0) {
       setState(() {});
     });
-    walletCheckApi();
+    ////walletCheckApi();
     driverIcon = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(devicePixelRatio: 2.5), DriverIcon);
-    getCurrentRequest();
-    mqttForUser();
+
     setTimeData();
     polylinePoints = PolylinePoints();
-
     getSettings();
     driverIcon = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(devicePixelRatio: 2.5), DriverIcon);
@@ -357,7 +361,6 @@ class DashboardScreenState extends State<DashboardScreen> {
       appStore.setLoading(false);
     }).catchError((error) {
       appStore.setLoading(false);
-
       log(error.toString());
     });
   }
@@ -369,11 +372,8 @@ class DashboardScreenState extends State<DashboardScreen> {
         appStore.currentRiderRequest = value.onRideRequest;
         servicesListData = value.onRideRequest;
         extraChargesAmount = value.onRideRequest!.extraChargesAmount;
-
         userDetail(driverId: value.onRideRequest!.riderId);
-
         setState(() {});
-
         if (servicesListData != null) {
           if (servicesListData!.status == COMPLETED &&
               servicesListData!.isDriverRated == 0) {
@@ -459,10 +459,17 @@ class DashboardScreenState extends State<DashboardScreen> {
       "end_address": endLocationAddress,
       "distance": totalDistance,
 
-      ////"distance": totalDistance + (totalDistance * 50 / 100),
-      /// Modif Mio para Compensar Distancia
+      ///if (extraChargeList.isNotEmpty)
       "extra_charges_amount": extraChargesAmount,
-      if (extraChargeList.isNotEmpty) "extra_charges": extraChargeList,
+
+      ///if (extraChargeList.isNotEmpty)
+      "extra_charges": extraChargeList,
+
+      ///if (extraChargeListDriver.isNotEmpty)
+      "extra_charges_amount_driver": extraChargeAmount,
+
+      ///if (extraChargeListDriver.isNotEmpty)
+      "extra_charges_driver": extraChargeListDriver,
     };
     log(req);
     await completeRide(request: req).then((value) async {
@@ -632,7 +639,7 @@ class DashboardScreenState extends State<DashboardScreen> {
               heading = event.heading - 90;
               Timer.periodic(Duration(seconds: 3), (t) async {
                 stutasCount = stutasCount! + 1;
-                if (stutasCount == 60) {
+                if (stutasCount == 20) {
                   Map req = {
                     // "status": "active",
                     "latitude": driverLocation!.latitude.toString(),
@@ -715,11 +722,6 @@ class DashboardScreenState extends State<DashboardScreen> {
             'new_ride_request_' +
             sharedPref.getInt(USER_ID).toString(),
         MqttQos.atLeastOnce);
-    client.subscribe(
-        mMQTT_UNIQUE_TOPIC_NAME +
-            'ride_request_status_' +
-            sharedPref.getInt(USER_ID).toString(),
-        MqttQos.atLeastOnce);
 
     client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) async {
       final MqttPublishMessage recMess = c![0].payload as MqttPublishMessage;
@@ -765,7 +767,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   void onConnected() {
-    log('Connected');
+    log('Connected to the broker');
   }
 
   void onSubscribed(String topic) {
@@ -791,6 +793,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   /// WalletCheck
+  /*
   Future<void> walletCheckApi() async {
     await walletDetailApi().then((value) async {
       if (value.totalAmount! >= value.minAmountToGetRide!) {
@@ -808,6 +811,7 @@ class DashboardScreenState extends State<DashboardScreen> {
       log("Error $e");
     });
   }
+  */
 
   @override
   void setState(fn) {
@@ -833,7 +837,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     return WillPopScope(
       onWillPop: () async {
         Map req = {
-          "is_available": 0,
+          "is_available": 1,
         };
         updateStatus(req).then((value) {
           //
@@ -1409,7 +1413,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                               SizedBox(height: 8),
                               if (servicesListData!.status == IN_PROGRESS)
 
-                                ////
+                                ////  CARGOS EXTRAS   /////////////////////////////
                                 if (appStore.extraChargeValue != null)
                                   Observer(builder: (context) {
                                     return Visibility(
@@ -1418,7 +1422,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                                           0,
                                       child: inkWellWidget(
                                         onTap: () async {
-                                          List<ExtraChargeRequestModel>?
+                                          List<ExtraChargeDriverRequestModel>?
                                               extraChargeListData =
                                               await showModalBottomSheet(
                                             isScrollControlled: true,
@@ -1437,22 +1441,28 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                             .viewInsets
                                                             .bottom),
                                                 child: ExtraChargesWidget(
-                                                    data: extraChargeList),
+                                                    data:
+                                                        extraChargeListDriver),
                                               );
                                             },
                                           );
                                           if (extraChargeListData != null) {
-                                            print(
-                                                "extraChargeListData   $extraChargeListData");
+                                            ////print("extraChargeListDriver " +
+                                            ////    (extraChargeListData[0].key)
+                                            ////        .toString() +
+                                            ////    (extraChargeListData[0].value)
+                                            ////        .toString());
                                             extraChargesAmount = 0;
-                                            extraChargeList.clear();
-                                            extraChargeListData
+                                            extraChargeListDriver.clear();
+                                            extraChargeListDriver
+                                                .addAll(extraChargeListData);
+                                            extraChargeListDriver
                                                 .forEach((element) {
                                               extraChargesAmount =
                                                   extraChargesAmount! +
                                                       element.value!;
-                                              extraChargeList =
-                                                  extraChargeListData;
+                                              extraChargeListDriver =
+                                                  extraChargeListDriver;
                                             });
                                           }
                                         },
@@ -1471,18 +1481,33 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                       Icon(Icons.add, size: 20),
                                                       SizedBox(width: 4),
                                                       Text(
-                                                          'Tarifas Adicionales',
-                                                          style: TextStyle(
-                                                              fontSize: 14)),
-                                                    ],
-                                                  ),
-                                                  Text(
+                                                          'Tarifas Adicionales '),
                                                       extraChargesAmount != 0
-                                                          ? '\$ ${extraChargesAmount.toString()}'
-                                                          : 'Ninguna',
-                                                      style: TextStyle(
-                                                          color: Colors.black87,
-                                                          fontSize: 14))
+                                                          ? Text(
+                                                              '\$ ${extraChargesAmount.toString()}',
+                                                              style: TextStyle(
+                                                                  color: const Color
+                                                                      .fromARGB(
+                                                                      221,
+                                                                      5,
+                                                                      41,
+                                                                      201),
+                                                                  fontSize: 14))
+                                                          : Container(),
+                                                      extraChargeAmount != 0
+                                                          ? Text(
+                                                              '\$ ${extraChargeAmount.toString()}',
+                                                              style: TextStyle(
+                                                                  color: const Color
+                                                                      .fromARGB(
+                                                                      221,
+                                                                      255,
+                                                                      2,
+                                                                      2),
+                                                                  fontSize: 14))
+                                                          : Container()
+                                                    ],
+                                                  )
                                                 ],
                                               ),
                                             ),
@@ -1491,7 +1516,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     );
                                   }),
-                              ////
+                              ////////////////////////////////////////////
 
                               buttonWidget()
                             ],
@@ -1516,11 +1541,15 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> getUserLocation() async {
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-        driverLocation!.latitude, driverLocation!.longitude);
-    Placemark place = placemarks[0];
-    endLocationAddress =
-        '${place.street},${place.subLocality},${place.thoroughfare},${place.locality}';
+    if (driverLocation != null) {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+          driverLocation!.latitude, driverLocation!.longitude);
+      Placemark place = placemarks[0];
+      endLocationAddress =
+          '${place.street},${place.subLocality},${place.thoroughfare},${place.locality}';
+    } else {
+      endLocationAddress = '';
+    }
   }
 
   Widget topWidget() {
